@@ -23,14 +23,12 @@ function renderMessages() {
         var minutes = ts.getMinutes();
         var seconds = ts.getSeconds();
         var time = hours + ":" + minutes + ":" + seconds;
-        var msgEl = "<li style='margin-top 3px; margin-bottom: 3px;'> <button onclick='return deleteMessage(this)' value='" + message.id + "' class='btn btn-danger btn-xs delBtn'>Delete Msg</button> <i>(" + time + ")</i> <b>" + content + "</b> - @" + name + "</li>";
+        var msgEl = "<li style='margin-top 3px; margin-bottom: 3px;'> <button onclick='return deleteMessage(true, this)' value='" + message.id + "' class='btn btn-danger btn-xs delBtn'>Delete Msg</button> <i>(" + time + ")</i> <b>" + content + "</b> - @" + name + "</li>";
         $messagesEl.append(msgEl);
     }
 }
 
 function loadMessages(data) {
-    console.log("Entering loadMessages");
-    // Load all the old messages from parse, newest first
     QUERY.descending("createdAt");
     QUERY.find().then(function(results) {
         MESSAGES = results;
@@ -45,7 +43,6 @@ function sendMessage(data) {
     message.set("content", data.content);
     message.save().then(function(obj) {
         console.log("Message saved!");
-        addMessage(obj);
     }, function(err) {
         alert(err.message);
     });
@@ -57,25 +54,49 @@ function addMessage(message) {
     renderMessages();
 }
 
-function deleteMessage(message) {
-    console.log("Removing message from the list: " + $(message).val());
-    // TODO: Delete the message from the MESSAGES list
-    MESSAGES.forEach(function(msg){
-      // console.log(msg.id);
-      if($(message).val() == msg.id){
-        
-      }
+function deleteMessage(userClickFlag, message) {
+  var delQuery = new Parse.Query("ChatMessage");
+  
+  var delMsgId = "";
+  
+  if(userClickFlag){
+     delMsgId = $(message).val();
+     delQuery.equalTo("objectId", $(message).val());
+     delQuery.first().then(function(delMsg){
+     delMsg.destroy().then(
+        function (success) {
+          console.log("Delete Success!" + success);
+        },
+        function (error) {
+          console.log("Delete Fail!" + error);
+        });
     });
+  } else {
+    delMsgId = message;
+  }
+  for(var i=0;i<MESSAGES.length;i++){
+    if(MESSAGES[i].id == delMsgId){
+      MESSAGES.splice(i,1);
+    }
+  }
     renderMessages();
 }
 
-function subscribeMessages(message) {
+function subscribeMessages() {
     console.log("Subscribing to new messages from parse");
     // TODO: Subscribe to the chat messages on the server with a live query and re-render the message list automatically.
     var subscription = QUERY.subscribe();
+
     subscription.on('create', function(newMsg) {
-        renderMessages();
+        console.log("subscription create: " + newMsg);
+        addMessage(newMsg);
     });
+
+    subscription.on('delete', function(msg){
+        console.log("subscription delete: " + msg.id);
+        deleteMessage(false, msg.id);
+    });
+
 }
 
 function doPing() {
