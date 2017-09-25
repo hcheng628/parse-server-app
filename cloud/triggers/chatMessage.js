@@ -2,6 +2,8 @@ Parse.Cloud.beforeSave("ChatMessage", function(request, response) {
     var inMsg = request.object.get('content');
     var inUsername = request.object.get("name");
 
+    console.log("Name: " + inUsername + "inMsg: " + inMsg);
+
     if (!inUsername || !inMsg) {
         response.error("Both username and content cannot be empty!");
     } else {
@@ -16,6 +18,8 @@ Parse.Cloud.beforeSave("ChatMessage", function(request, response) {
             }, function(err) {
                 response.error(err.message);
             });
+        }else{
+            response.success();
         }
     }
 });
