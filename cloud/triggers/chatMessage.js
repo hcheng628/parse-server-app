@@ -5,7 +5,7 @@ Parse.Cloud.beforeSave("ChatMessage", function(request, response) {
     if (!inUsername || !inMsg) {
         response.error("Both username and content cannot be empty!");
     } else {
-        if(newMsg.toLowerCase().indexOf("@bot") >= 0){
+        if(inMsg.toLowerCase().indexOf("@bot") >= 0){
             var ChatMessage = Parse.Object.extend("ChatMessage");
             var message = new ChatMessage();
             message.set("name", 'bot');
