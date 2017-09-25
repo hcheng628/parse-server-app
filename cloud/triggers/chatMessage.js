@@ -12,8 +12,9 @@ Parse.Cloud.beforeSave("ChatMessage", function(request, response) {
             message.set("content", 'Hia @' + inUsername + 'how can I help you?');
             message.save().then(function(obj) {
                 console.log("Message saved!");
+                response.success();
             }, function(err) {
-                alert(err.message);
+                response.error(err.message);
             });
         }
     }
