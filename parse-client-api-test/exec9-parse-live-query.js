@@ -100,7 +100,13 @@ function subscribeMessages() {
 }
 
 function doPing() {
-    // TODO: flesh this out AFTER watching the section on cloud code
+    Parse.Cloud.run('ping').then(function(resp) {
+        if(resp == 'pong'){
+            alert('Server is Up!');
+        }else {
+            alert('Server is Down!');
+        }
+    });
 }
 
 $(document).ready(function() {
